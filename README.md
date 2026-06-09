@@ -4,10 +4,10 @@ Proyek Akhir Mata Kuliah **Pemrograman Berbasis Web (SIF-1402)**
 Universitas Pignatelli Triputra - Program Studi Sistem Informasi (P1)
 
 ## 👤 Ide ntitas Mahasiswa
-- **Nama**Celsiana Tantri
-- **NIM:** 43026028
-- **Angkatan: 2024a
-- **Link Video Demonstrasi:
+- **Nama** Celsiana Tantri
+- **NIM:** 243026028
+- **Angkatan:** 2024
+- **Link Video Demonstrasi:** https://drive.google.com/file/d/1VmZRAidtIzGoCVQRysHG8Ssz7I05_lyr/view?usp=sharing
 
 ## 📝 Deskripsi Proyek
 Sistem informasi berbasis web untuk mengelola pelaporan keluhan pelanggan secara digital. Sistem ini memungkinkan pelanggan untuk melaporkan masalah, melacak status tiket secara real-time, serta memberikan rating kepuasan. Di sisi admin, sistem menyediakan dashboard analitik untuk monitoring SLA (Service Level Agreement) dan pengambilan keputusan berbasis data.
@@ -29,4 +29,3 @@ Sistem informasi berbasis web untuk mengelola pelaporan keluhan pelanggan secara
 4. **Audit Log:** Mencatat setiap perubahan status tiket.
 5. **Export Data:** Export laporan ke format CSV/PDF (Nilai Tambah).
 
-## 📂 Struktur Folder
