@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Keluhan Pelanggan - Helpdesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #ec4899;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .hero-badge {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .feature-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      color: white;
+      font-size: 2rem;
+    }
+    
+    .step-number {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+    
+    .btn-custom {
+      padding: 1rem 2.5rem;
+      font-weight: 600;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+    }
+    
+    .stats-card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 15px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    
+    .stats-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: white;
+    }
+    
+    /* Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-fade {
+      animation: fadeInUp 0.8s ease;
+    }
+    
+    .delay-1 { animation-delay: 0.2s; }
+    .delay-2 { animation-delay: 0.4s; }
+    .delay-3 { animation-delay: 0.6s; }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <section class="hero-section d-flex align-items-center">
+    <div class="container hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-6 animate-fade">
+          <div class="hero-badge d-inline-block px-3 py-1 rounded-pill mb-3">
+            <small class="text-white">🎧 Sistem Helpdesk Modern</small>
+          </div>
+          <h1 class="display-4 fw-bold text-white mb-4">
+            Solusi Cepat untuk<br>
+            <span class="text-warning">Setiap Keluhan Anda</span>
+          </h1>
+          <p class="lead text-white opacity-90 mb-4">
+            Laporkan masalah, pantau progres real-time, dan dapatkan solusi terbaik dari tim support kami. Cepat, transparan, dan terpercaya.
+          </p>
+          
+          <div class="d-flex gap-3 flex-wrap mb-5">
+            <a href="/login.html" class="btn btn-light btn-custom text-primary">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Masuk Sekarang
+            </a>
+            <a href="#cara-kerja" class="btn btn-outline-light btn-custom">
+              <i class="bi bi-play-circle me-2"></i>Cara Kerja
+            </a>
+          </div>
+          
+          <!-- Stats -->
+          <div class="row g-3">
+            <div class="col-4">
+              <div class="stats-card">
+                <div class="stats-number">98%</div>
+                <small class="text-white opacity-75">Tiket Selesai</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stats-card">
+                <div class="stats-number">24j</div>
+                <small class="text-white opacity-75">Respon Cepat</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="stats-card">
+                <div class="stats-number">4.8★</div>
+                <small class="text-white opacity-75">Kepuasan</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-6 text-center d-none d-lg-block animate-fade delay-2">
+          <img src="https://illustrations.popsy.co/yellow/customer-support.svg" alt="Customer Support" class="img-fluid" style="max-width: 500px; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2));">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-5 bg-light">
+    <div class="container py-5">
+      <div class="text-center mb-5">
+        <h6 class="text-primary fw-bold text-uppercase mb-2">Fitur Utama</h6>
+        <h2 class="fw-bold">Mengapa Menggunakan Sistem Ini?</h2>
+        <p class="text-muted">Solusi lengkap untuk manajemen keluhan pelanggan</p>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-md-4 animate-fade delay-1">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="bi bi-ticket-detailed"></i>
+            </div>
+            <h5 class="fw-bold mb-3">Tiket Terstruktur</h5>
+            <p class="text-muted mb-0">Setiap keluhan dikelola dengan sistem tiket yang terorganisir, mudah dilacak, dan tidak ada yang terlewat.</p>
+          </div>
+        </div>
+        
+        <div class="col-md-4 animate-fade delay-2">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h5 class="fw-bold mb-3">Pantau Real-Time</h5>
+            <p class="text-muted mb-0">Cek status tiket kapan saja. Dari "Baru" hingga "Selesai", Anda selalu tahu progres penanganan.</p>
+          </div>
+        </div>
+        
+        <div class="col-md-4 animate-fade delay-3">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="bi bi-chat-dots"></i>
+            </div>
+            <h5 class="fw-bold mb-3">Komunikasi Langsung</h5>
+            <p class="text-muted mb-0">Chat langsung dengan admin dalam tiket yang sama. Tidak perlu email bolak-balik.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="cara-kerja" class="py-5">
+    <div class="container py-5">
+      <div class="text-center mb-5">
+        <h6 class="text-primary fw-bold text-uppercase mb-2">Cara Kerja</h6>
+        <h2 class="fw-bold">3 Langkah Mudah</h2>
+        <p class="text-muted">Selesaikan masalah Anda dalam hitungan menit</p>
+      </div>
+      
+      <div class="row g-4 align-items-center">
+        <div class="col-md-4 text-center animate-fade">
+          <div class="d-inline-flex align-items-center mb-3">
+            <div class="step-number">1</div>
+            <h5 class="fw-bold mb-0">Buat Tiket</h5>
+          </div>
+          <p class="text-muted">Pilih kategori, prioritas, dan jelaskan masalah Anda secara detail.</p>
+          <img src="https://illustrations.popsy.co/yellow/form.svg" class="img-fluid" style="max-width: 200px; opacity: 0.8;">
+        </div>
+        
+        <div class="col-md-4 text-center animate-fade delay-1">
+          <div class="d-inline-flex align-items-center mb-3">
+            <div class="step-number">2</div>
+            <h5 class="fw-bold mb-0">Pantau Progres</h5>
+          </div>
+          <p class="text-muted">Tim kami akan segera menindaklanjuti. Pantau status dan berkomunikasi via chat.</p>
+          <img src="https://illustrations.popsy.co/yellow/analytics.svg" class="img-fluid" style="max-width: 200px; opacity: 0.8;">
+        </div>
+        
+        <div class="col-md-4 text-center animate-fade delay-2">
+          <div class="d-inline-flex align-items-center mb-3">
+            <div class="step-number">3</div>
+            <h5 class="fw-bold mb-0">Selesai & Rating</h5>
+          </div>
+          <p class="text-muted">Masalah terselesaikan! Berikan rating untuk meningkatkan layanan kami.</p>
+          <img src="https://illustrations.popsy.co/yellow/completed-task.svg" class="img-fluid" style="max-width: 200px; opacity: 0.8;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-5 bg-light">
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+          <h2 class="fw-bold mb-4">Siap Mengalami Layanan Lebih Baik?</h2>
+          <p class="lead text-muted mb-4">Bergabunglah dengan ribuan pelanggan yang telah merasakan kemudahan sistem kami.</p>
+          <a href="/login.html" class="btn btn-primary btn-custom btn-lg">
+            <i class="bi bi-rocket-takeoff me-2"></i>Mulai Sekarang - Gratis!
+          </a>
+          <p class="small text-muted mt-3">✓ Tidak perlu kartu kredit &nbsp; ✓ Setup instan &nbsp; ✓ Support 24/7</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white py-4">
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2024 Sistem Keluhan Pelanggan. All rights reserved.</p>
+      <small class="text-white-50">Dibuat dengan ❤️ untuk pelayanan terbaik</small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

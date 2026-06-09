@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Sistem Keluhan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <style>
+    .badge-status{padding:.3rem .8rem;border-radius:20px;font-size:.8rem;font-weight:500}
+    .badge-baru{background:#dbeafe;color:#1d4ed8}.badge-diproses{background:#fef3c7;color:#b45309}.badge-selesai{background:#dcfce7;color:#166534}
+    .notif-item{cursor:pointer;padding:.75rem;border-bottom:1px solid #f1f5f9}.notif-item:hover{background:#f8fafc}.notif-item.unread{background:#eff6ff;border-left:3px solid #4f46e5}
+    #notif-badge{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#"><i class="bi bi-headset me-2"></i><span id="nav-title">Sistem Keluhan</span></a>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <div class="dropdown me-2">
+        <button class="btn btn-light position-relative p-2" data-bs-toggle="dropdown">
+          <i class="bi bi-bell fs-5"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notif-badge" style="display:none;font-size:.65rem">0</span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end shadow border-0" style="width:320px;max-height:400px;overflow-y:auto">
+          <div class="dropdown-header d-flex justify-content-between"><span class="fw-bold">🔔 Notifikasi</span><button class="btn btn-link btn-sm p-0" onclick="markAllRead()">Tandai semua</button></div>
+          <div id="notif-list" class="list-group list-group-flush"><div class="list-group-item text-center text-muted py-3">Memuat...</div></div>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="btn btn-light d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+          <img id="nav-avatar" src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff" class="rounded-circle" width="32" height="32">
+          <span id="nav-username" class="fw-medium">Loading...</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end p-0 shadow">
+          <li class="p-3 border-bottom"><div class="fw-bold" id="dropdown-name">User</div><div class="small text-muted" id="dropdown-email">email</div></li>
+          <li><a class="dropdown-item py-2" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Keluar</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+  <nav aria-label="breadcrumb"><ol class="breadcrumb mb-3"><li class="breadcrumb-item active" id="breadcrumb-active">Dashboard</li></ol></nav>
+
+ <!-- ADMIN ONLY: Dashboard Monitoring -->
+<div id="admin-stats" class="row g-3 mb-4" style="display:none">
+  <!-- Stats Cards -->
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 bg-primary text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="small opacity-75">Total Tiket</div>
+            <h3 class="mb-0 fw-bold" id="stat-total">0</h3>
+          </div>
+          <i class="bi bi-inbox fs-1 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 bg-success text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="small opacity-75">Selesai</div>
+            <h3 class="mb-0 fw-bold" id="stat-selesai">0</h3>
+          </div> 
+          <i class="bi bi-check-circle fs-1 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 bg-warning text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="small opacity-75">High Priority</div>
+            <h3 class="mb-0 fw-bold" id="stat-high">0</h3>
+          </div>
+          <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+        </div>
+        <small class="opacity-75" id="stat-high-text">Perlu perhatian!</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100 bg-info text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="small opacity-75">Rata-rata Rating</div>
+            <h3 class="mb-0 fw-bold" id="stat-rating">-</h3>
+          </div>
+          <i class="bi bi-star fs-1 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Tambahkan di dalam row admin-stats, misal setelah card Rating -->
+<div class="col-md-3">
+  <div class="card border-0 shadow-sm h-100 bg-purple text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small opacity-75">Rata-rata Respon</div>
+          <h3 class="mb-0 fw-bold" id="stat-respon">-</h3>
+        </div>
+        <i class="bi bi-clock-history fs-1 opacity-50"></i>
+      </div>
+      <small class="opacity-75" id="stat-respon-detail">Dari tiket yang dibalas</small>
+    </div>
+  </div>
+</div>
+
+  <!-- Category Breakdown & High Priority Alert -->
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-3">
+        <h6 class="fw-bold mb-0">📊 Distribusi Kategori Tiket</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="chart-kategori" style="max-height:250px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100 border-warning">
+      <div class="card-header bg-warning bg-opacity-10 border-0">
+        <h6 class="fw-bold text-warning mb-0">⚠️ Tiket Prioritas Tinggi</h6>
+      </div>
+      <div class="card-body overflow-auto" id="high-priority-list" style="max-height:300px">
+        <div class="text-center text-muted py-4">Memuat...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- USER ONLY: Form -->
+  <div id="user-create" class="card mb-4" style="display:none">
+    <div class="card-header fw-medium">📝 Buat Tiket Baru</div>
+    <div class="card-body">
+      <form id="form-create" class="row g-3">
+        <div class="col-md-3"><select class="form-select" id="input-kategori" required><option value="">Kategori...</option><option>Teknis</option><option>Billing</option><option>Layanan</option><option>Produk</option></select></div>
+        <div class="col-md-3"><select class="form-select" id="input-prioritas" required><option value="">Prioritas...</option><option>Low</option><option>Medium</option><option>High</option></select></div>
+        <div class="col-md-6"><input type="text" class="form-control" id="input-deskripsi" placeholder="Jelaskan keluhan Anda..." required></div>
+        <div class="col-12"><button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>Kirim Tiket</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filter & Table -->
+  <div class="card mb-3">
+    <div class="card-body py-2">
+      <div class="row g-2">
+        <div class="col-md-4"><input type="text" id="search" class="form-control form-control-sm" placeholder="🔍 Cari..."></div>
+        <div class="col-md-2"><select id="filter-status" class="form-select form-select-sm"><option value="">Semua Status</option><option>Baru</option><option>Diproses</option><option>Selesai</option></select></div>
+        <div class="col-md-2"><button class="btn btn-outline-secondary btn-sm w-100" onclick="loadTickets()">Refresh</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between"><h5 class="mb-0 fw-medium" id="table-title">📋 Daftar Tiket</h5><span class="small text-muted" id="count">0 tiket</span></div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>ID</th><th>Pelanggan</th><th>Kategori</th><th>Status</th><th class="text-end">Aksi</th></tr></thead>
+        <tbody id="table-body"><tr><td colspan="5" class="text-center py-4">Memuat...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CHAT (STANDAR & NYAMAN) -->
+<div class="modal fade" id="modal-chat" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="height: 75vh; display: flex; flex-direction: column;">
+      <div class="modal-header border-bottom">
+        <div>
+          <h5 class="modal-title fw-bold" id="chat-title">Tiket #...</h5>
+          <small class="text-muted" id="chat-subtitle">Pelanggan: ...</small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body flex-grow-1 overflow-auto p-3" id="chat-messages" style="background: #f8fafc;">
+        <div class="text-center text-muted py-4">Memuat percakapan...</div>
+      </div>
+      <div class="modal-footer border-top p-2 bg-white">
+        <form id="chat-form" class="d-flex gap-2 w-100 align-items-end">
+          <input type="hidden" id="chat-ticket-id">
+          <textarea id="chat-input" class="form-control" rows="1" placeholder="Ketik pesan..." style="resize:none; border-radius:20px; max-height:100px;" required></textarea>
+          <button type="submit" class="btn btn-primary rounded-circle px-3 mb-1"><i class="bi bi-send-fill"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT STATUS (DIPERBAIKI) -->
+<div class="modal fade" id="modal-edit" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Status Tiket</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-id">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Status</label>
+          <select class="form-select" id="edit-status">
+            <option>Baru</option><option>Diproses</option><option>Menunggu</option><option>Selesai</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Rating (1-5)</label>
+          <input type="number" class="form-control" id="edit-rating" min="1" max="5" placeholder="Opsional">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button class="btn btn-primary" onclick="saveEdit()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const API = 'http://localhost:3000/api';
+  const token = localStorage.getItem('token');
+  let currentUser = { nama: 'User', role: 'Pelanggan', email: '' };
+  let isAdmin = false;
+  let allTickets = [];
+  let notifications = [];
+  let currentTicketId = null;
+  let chartInstance = null;
+
+  const headers = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` });
+
+  if (!token) { window.location.href = '/login.html'; }
+  else {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const roleLower = (payload.role || 'Pelanggan').toLowerCase();
+      isAdmin = (roleLower === 'admin' || roleLower === 'cs');
+      currentUser = { nama: payload.nama || 'User', role: payload.role || 'Pelanggan', email: payload.email || '' };
+    } catch(e) { localStorage.removeItem('token'); window.location.href = '/login.html'; }
+  }
+
+  let currentDetailId = null;
+
+// 🔓 BUKA DETAIL TIKET
+window.bukaDetailTiket = async function(id) {
+  if (!id) return console.error("❌ ID Tiket tidak valid!");
+  currentDetailId = id;
+  console.log("🔍 Membuka detail tiket #", id);
+
+  // Reset UI sementara
+  document.getElementById('detail-id').textContent = id;
+  document.getElementById('detail-nama').textContent = 'Memuat...';
+  document.getElementById('detail-deskripsi').textContent = 'Memuat...';
+  document.getElementById('detail-chat').innerHTML = '<div class="text-center text-muted py-3">Memuat percakapan...</div>';
+
+  try {
+    const res = await fetch(`${API}/tickets/${id}`, { headers: headers() });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Isi Data
+    document.getElementById('detail-nama').textContent = data.nama_pelanggan || '-';
+    document.getElementById('detail-email').textContent = data.email || '-';
+    document.getElementById('detail-kategori').textContent = data.kategori || '-';
+    document.getElementById('detail-deskripsi').textContent = data.deskripsi || 'Tidak ada deskripsi.';
+
+    // Badge Prioritas
+    const pEl = document.getElementById('detail-prioritas');
+    pEl.textContent = data.prioritas || '-';
+    pEl.className = 'badge ' + (data.prioritas === 'High' ? 'bg-danger' : data.prioritas === 'Medium' ? 'bg-warning text-dark' : 'bg-secondary');
+
+    // Badge Status
+    const sEl = document.getElementById('detail-status');
+    sEl.textContent = data.status || 'Baru';
+    sEl.className = 'badge ' + (data.status === 'Selesai' ? 'bg-success' : data.status === 'Diproses' ? 'bg-warning text-dark' : 'bg-primary');
+
+    // Load Chat
+    muatPercakapan(id);
+
+    // Tampilkan Modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetail')) || new bootstrap.Modal(document.getElementById('modalDetail'));
+    modal.show();
+
+  } catch (err) {
+    console.error("❌ Error detail:", err);
+    alert("Gagal memuat detail. Cek Console (F12) untuk error lengkap.");
+  }
+};
+
+// 💬 MUAT PERCAKAPAN
+async function muatPercakapan(id) {
+  const box = document.getElementById('detail-chat');
+  try {
+    const res = await fetch(`${API}/responses/ticket/${id}`, { headers: headers() });
+    const chats = await res.json();
+    if (!chats.length) {
+      box.innerHTML = '<div class="text-center text-muted py-3">Belum ada percakapan.</div>';
+      return;
+    }
+    box.innerHTML = chats.map(c => {
+      const isAdminMsg = ['Admin', 'CS', 'admin', 'cs'].includes(c.peran);
+      return `<div class="mb-2 ${isAdminMsg ? 'text-end' : 'text-start'}">
+        <div class="d-inline-block p-2 ${isAdminMsg ? 'chat-admin' : 'chat-user'}" style="max-width:80%;text-align:left;">
+          <small class="d-block opacity-75 fw-bold">${c.nama_petugas || c.peran}</small>
+          ${c.isi_respon}
+          <div class="text-end mt-1" style="font-size:0.7rem;opacity:0.6;">${new Date(c.tgl_respon).toLocaleString('id-ID')}</div>
+        </div>
+      </div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  } catch (e) {
+    box.innerHTML = '<div class="text-danger text-center">Gagal memuat chat</div>';
+  }
+}
+
+// 📤 KIRIM BALASAN
+// 📤 KIRIM BALASAN (KODE BARU - GLOBAL FUNCTION)
+window.kirimBalasan = async function(e) {
+  e.preventDefault(); // Cegah reload halaman
+  
+  const txt = document.getElementById('input-balas').value.trim();
+  
+  // Debug log (bisa dilihat di Console F12)
+  console.log('📤 Mengirim:', txt, '| Ticket ID:', currentDetailId);
+  
+  if (!txt || !currentDetailId) {
+    alert('Pesan tidak boleh kosong');
+    return false; 
+  }
+  
+  const btn = e.target.querySelector('button[type="submit"]');
+  const originalBtn = btn.innerHTML;
+  
+  // Ubah tombol jadi loading
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  
+  try {
+    const payload = {
+      id_tiket: parseInt(currentDetailId),
+      isi_respon: txt,
+      peran: isAdmin ? currentUser.role : 'Pelanggan',
+      nama_petugas: currentUser.nama
+    };
+    
+    const res = await fetch(`${API}/responses`, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(payload)
+    });
+    
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || `HTTP ${res.status}`);
+    }
+    
+    // Reset form & reload chat
+    document.getElementById('input-balas').value = '';
+    await muatPercakapan(currentDetailId);
+    
+    return false; // PENTING: Agar form tidak submit default
+    
+  } catch (err) {
+    console.error('❌ Error:', err);
+    alert('Gagal kirim: ' + err.message);
+    return false;
+  } finally {
+    // Kembalikan tombol seperti semula
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-send"></i>';
+    }
+  }
+};
+
+// ✏️ UBAH STATUS
+window.ubahStatus = async function(statusBaru) {
+  if (!currentDetailId || !confirm(`Ubah status jadi "${statusBaru}"?`)) return;
+  try {
+    await fetch(`${API}/tickets/${currentDetailId}`, { method: 'PUT', headers: headers(), body: JSON.stringify({ status: statusBaru }) });
+    alert('Status diubah!');
+    bukaDetailTiket(currentDetailId); // Refresh modal
+    loadTickets(); // Refresh tabel
+  } catch (err) { alert('Gagal: ' + err.message); }
+};
+
+// 🗑️ HAPUS TIKET
+window.hapusTiket = async function() {
+  if (!currentDetailId || !confirm('Yakin hapus tiket ini?')) return;
+  try {
+    await fetch(`${API}/tickets/${currentDetailId}`, { method: 'DELETE', headers: headers() });
+    bootstrap.Modal.getInstance(document.getElementById('modalDetail')).hide();
+    loadTickets();
+    alert('Tiket dihapus.');
+  } catch (err) { alert('Gagal: ' + err.message); }
+};
+
+//6. DOWNLOAD LAPORAN
+window.downloadLaporan = async function() {
+  if (!currentDetailId) return;
+  try {
+    const [tRes, cRes] = await Promise.all([
+      fetch(`${API}/tickets/${currentDetailId}`, { headers: headers() }),
+      fetch(`${API}/responses/ticket/${currentDetailId}`, { headers: headers() })
+    ]);
+    const t = await tRes.json();
+    const chats = await cRes.json();
+
+    let report = `════════════════════════════════════════\n   LAPORAN TIKET #${t.id_tiket}\n════════════════════════════════════════\n\n`;
+    report += `📅 TANGGAL     : ${new Date(t.tgl_keluhan).toLocaleString('id-ID')}\n`;
+    report += `👤 PELANGGAN   : ${t.nama_pelanggan} (${t.email})\n`;
+    report += `🏷️ KATEGORI    : ${t.kategori} | Prioritas: ${t.prioritas}\n`;
+    report += `📊 STATUS      : ${t.status}\n`;
+    if (t.rating_kepuasan) report += `⭐ RATING      : ${t.rating_kepuasan}/5\n`;
+    report += `\n📝 DESKRIPSI:\n${t.deskripsi || '-'}\n\n RIWAYAT PERCAKAPAN:\n----------------------------------------\n`;
+    if (chats.length === 0) report += `(Belum ada percakapan)\n`;
+    chats.forEach((c, i) => {
+      report += `\n[${i + 1}] ${c.peran.toUpperCase()} (${c.nama_petugas || '-'})\nWaktu : ${new Date(c.tgl_respon).toLocaleString('id-ID')}\nPesan : ${c.isi_respon}\n`;
+    });
+    report += `\n════════════════════════════════════════\nDicetak oleh: ${currentUser.nama}\nTanggal cetak: ${new Date().toLocaleString('id-ID')}\n`;
+
+    const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `Laporan_Tiket_${t.id_tiket}.txt`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) { alert('❌ Gagal mengunduh laporan: ' + err.message); }
+};
+
+ function setupUI() {
+  // Helper function untuk set style dengan aman
+  const setStyle = (id, prop, value) => {
+    const el = document.getElementById(id);
+    if (el) el.style[prop] = value;
+  };
+
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+
+  // Update profile
+  setText('nav-username', currentUser.nama);
+  setText('dropdown-name', currentUser.nama);
+  setText('dropdown-email', currentUser.email);
+  const avatarEl = document.getElementById('nav-avatar');
+  if (avatarEl) avatarEl.src = `https://ui-avatars.com/api/?name=${currentUser.nama}&background=4f46e5&color=fff`;
+
+  if (isAdmin === true) {
+    setText('nav-title', 'Admin Panel');
+    setText('breadcrumb-active', 'Dashboard Admin');
+    setText('table-title', '📋 Semua Tiket');
+    setStyle('admin-stats', 'display', 'flex');
+    setStyle('user-create', 'display', 'none');
+    setStyle('modal-footer', 'display', 'block');
+    setStyle('col-aksi', 'display', 'table-cell');
+    loadChart();
+  } else {
+    setText('nav-title', 'Portal Pelanggan');
+    setText('breadcrumb-active', 'Tiket Saya');
+    setText('table-title', '📋 Tiket Saya');
+    setStyle('admin-stats', 'display', 'none');
+    setStyle('user-create', 'display', 'block');
+    setStyle('modal-footer', 'display', 'none');
+    setStyle('col-aksi', 'display', 'none');
+  }
+  
+  loadTickets();
+  loadNotifications();
+  setInterval(loadNotifications, 15000);
+}
+  // 📊 CHART FUNCTION - FIXED & WORKING
+  function loadChart() {
+    if(!isAdmin || allTickets.length === 0) return;
+    
+    try {
+      // Hitung kategori dari allTickets
+      const kategoriCount = {};
+      allTickets.forEach(t => {
+        const kat = t.kategori || 'Lainnya';
+        kategoriCount[kat] = (kategoriCount[kat] || 0) + 1;
+      });
+      
+      const labels = Object.keys(kategoriCount);
+      const values = Object.values(kategoriCount);
+      const colors = ['#6366f1', '#ec4899', '#06b6d4', '#10b981', '#f59e0b'];
+      
+      const ctx = document.getElementById('chart-kategori').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      
+      if(labels.length === 0) return;
+
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        plugins: [ChartDataLabels],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          plugins: {
+            legend: { position: 'right', labels: { usePointStyle: true, padding: 15 } },
+            datalabels: {
+              color: '#ffffff',
+              font: { weight: 'bold', size: 13 },
+              formatter: (value, ctx) => {
+                const label = ctx.chart.data.labels[ctx.dataIndex];
+                return label.length > 7 ? label.substring(0,7) + '..' : label;
+              }
+            }
+          }
+        }
+      });
+    } catch(e) { 
+      console.error('Chart error:', e); 
+    }
+  }
+
+  // 📋 LOAD DATA TIKET (UPDATED UNTUK DASHBOARD BARU)
+async function loadTickets() {
+  try {
+    const res = await fetch(`${API}/tickets`, { headers: headers() });
+    if (!res.ok) throw new Error('Gagal fetch');
+    allTickets = await res.json();
+    
+    // Render Tabel
+    renderTickets(allTickets);
+    
+    // Update Dashboard Admin (Jalankan hanya jika login sebagai Admin)
+    if (isAdmin) {
+      updateDashboardStats(allTickets);
+      setTimeout(loadChart, 200); // Delay sedikit biar canvas ready
+    }
+  } catch(e) { 
+    console.error(e);
+    document.getElementById('table-body').innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error: ${e.message}</td></tr>`; 
+  }
+}
+
+// 📊 UPDATE STATISTIK DASHBOARD (BARU)
+function updateDashboardStats(tickets) {
+  if(!tickets) return;
+  
+  // 1. Hitung Angka
+  const total = tickets.length;
+  const selesai = tickets.filter(t => t.status === 'Selesai').length;
+  
+  // High Priority (Hanya yang status BELUM Selesai)
+  const highPriorityTickets = tickets.filter(t => t.prioritas === 'High' && t.status !== 'Selesai');
+  const highCount = highPriorityTickets.length;
+
+  // Rating Rata-rata
+  const ratedTickets = tickets.filter(t => t.rating_kepuasan !== null && t.rating_kepuasan !== undefined);
+  const avgRating = ratedTickets.length > 0 
+    ? (ratedTickets.reduce((sum, t) => sum + Number(t.rating_kepuasan), 0) / ratedTickets.length).toFixed(1) 
+    : '-';
+
+  // 2. Tampilkan di Kartu
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-selesai').textContent = selesai;
+  document.getElementById('stat-high').textContent = highCount;
+  document.getElementById('stat-rating').textContent = avgRating;
+
+  // Update teks kecil di kartu High Priority
+  const highText = document.getElementById('stat-high-text');
+  if(highText) highText.textContent = highCount > 0 ? `${highCount} tiket butuh tindakan` : 'Aman';
+
+  // 3. Render List "Tiket Prioritas Tinggi"
+  const listContainer = document.getElementById('high-priority-list');
+  if(listContainer) {
+    if (highCount === 0) {
+      listContainer.innerHTML = '<div class="text-center text-success py-4"><i class="bi bi-check-circle fs-4"></i><br>Tidak ada tiket urgent</div>';
+    } else {
+      listContainer.innerHTML = highPriorityTickets.map(t => `
+        <div class="border-bottom pb-2 mb-2 px-1" style="cursor:pointer" onclick="window.openTicketDetail(${t.id_tiket})">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-danger text-white">#${t.id_tiket}</span>
+            <small class="text-muted">${new Date(t.tgl_keluhan).toLocaleDateString('id-ID')}</small>
+          </div>
+          <div class="fw-bold small mt-1">${t.nama_pelanggan}</div>
+          <div class="small text-muted text-truncate">${t.kategori} • ${t.status}</div>
+        </div>
+      `).join('');
+    }
+  }
+  
+}
+
+// 🛤️ RENDER TABEL (TANPA TOMBOL, KLIK BARIS)
+function renderTickets(list) {
+  const tb = document.getElementById('table-body');
+  document.getElementById('count').textContent = `${list.length} tiket`;
+  
+  if(!list.length) { 
+    tb.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Tidak ada data</td></tr>'; 
+    return; 
+  }
+  
+  tb.innerHTML = list.map(t => {
+    // Style Status
+    const sc = t.status==='Selesai'?'badge-selesai':t.status==='Diproses'?'badge-diproses':'badge-baru';
+    // Style Prioritas
+    const pc = t.prioritas==='High'?'bg-danger text-white':t.prioritas==='Medium'?'bg-warning text-dark':'bg-secondary text-white';
+    
+    // Highlight Row jika High Priority & Belum Selesai
+    const rowClass = (t.prioritas === 'High' && t.status !== 'Selesai') ? 'table-danger' : '';
+
+    return `<tr style="cursor:pointer" onclick="window.bukaDetailTiket(${t.id_tiket})">
+      <td><strong class="text-primary">#${t.id_tiket}</strong></td>
+      <td>${t.nama_pelanggan}<br><small class="text-muted">${t.email}</small></td>
+      <td><span class="badge bg-light text-dark">${t.kategori}</span></td>
+      <td>
+        <span class="badge ${pc} me-1">${t.prioritas}</span>
+        <span class="badge-status ${sc}">${t.status}</span>
+      </td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-light rounded-circle" style="pointer-events:none"><i class="bi bi-eye"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+
+  // 🔔 1. LOAD NOTIFIKASI (FIXED & STABLE)
+async function loadNotifications() {
+  try {
+    const res = await fetch(`${API}/tickets`, { headers: headers() });
+    if (!res.ok) return;
+    const tickets = await res.json();
+    
+    let newNotifs = [];
+    
+    // Ambil data dari localStorage
+    let seenTickets = JSON.parse(localStorage.getItem('notif_seen') || '[]');
+    let lastReply = JSON.parse(localStorage.getItem('notif_reply') || '{}');
+    
+    for (let t of tickets) {
+      // Admin: Tiket Baru
+      if (isAdmin && t.status === 'Baru' && !seenTickets.includes(t.id_tiket)) {
+        newNotifs.push({
+          id: 'n-' + t.id_tiket + '-' + Date.now(),
+          ticketId: t.id_tiket,
+          title: '📥 Tiket Baru',
+          msg: '#' + t.id_tiket + ' dari ' + t.nama_pelanggan,
+          time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
+          ts: Date.now(),
+          read: false
+        });
+        seenTickets.push(t.id_tiket);
+      }
+      
+      // User/Admin: Balasan Baru
+      if (t.status !== 'Selesai') {
+        try {
+          const rRes = await fetch(`${API}/responses/ticket/${t.id_tiket}`, { headers: headers() });
+          if (rRes.ok) {
+            const resp = await rRes.json();
+            if (resp.length > 0) {
+              const last = resp[resp.length - 1];
+              const tTime = new Date(last.tgl_respon).getTime();
+              const lastCheck = lastReply[t.id_tiket] || 0;
+              
+              if (tTime > lastCheck) {
+                let shouldNotify = false;
+                if (isAdmin && ['Pelanggan','Customer','User'].includes(last.peran)) {
+                  shouldNotify = true;
+                } else if (!isAdmin && ['Admin','CS','admin','cs'].includes(last.peran)) {
+                  shouldNotify = true;
+                }
+                
+                if (shouldNotify) {
+                  newNotifs.push({
+                    id: 'r-' + t.id_tiket + '-' + tTime,
+                    ticketId: t.id_tiket,
+                    title: '💬 Ada Balasan',
+                    msg: '#' + t.id_tiket + ': ' + (last.isi_respon || '').substring(0, 30),
+                    time: new Date(last.tgl_respon).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
+                    ts: tTime,
+                    read: false
+                  });
+                  lastReply[t.id_tiket] = tTime;
+                }
+              }
+            }
+          }
+        } catch(e) {}
+      }
+    }
+    
+    // Simpan ke localStorage
+    localStorage.setItem('notif_seen', JSON.stringify(seenTickets));
+    localStorage.setItem('notif_reply', JSON.stringify(lastReply));
+    
+    // Tambah notifikasi baru
+    if (newNotifs.length > 0) {
+      notifications = newNotifs.concat(notifications);
+      notifications = notifications.slice(0, 20); // Max 20 notifs
+      renderNotifications();
+      updateNotifBadge();
+    }
+    
+  } catch(e) {
+    console.error('Notif error:', e);
+  }
+}
+
+// 📜 2. RENDER NOTIFIKASI (DENGAN SORTING TERBARU DI ATAS)
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  
+  if (!notifications || notifications.length === 0) {
+    list.innerHTML = '<div class="list-group-item text-center text-muted py-3">Kosong</div>';
+    return;
+  }
+  
+  // SORT: Terbaru di atas
+  const sorted = notifications.slice().sort((a, b) => b.ts - a.ts);
+  
+  list.innerHTML = sorted.map(n => 
+    '<div class="list-group-item list-group-item-action notif-item ' + (n.read ? '' : 'unread') + '" onclick="window.klikNotif(\'' + n.id + '\', ' + n.ticketId + ')">' +
+      '<div class="fw-bold small">' + n.title + '</div>' +
+      '<div class="small text-muted">' + n.msg + '</div>' +
+      '<div class="small text-muted mt-1">' + n.time + '</div>' +
+    '</div>'
+  ).join('');
+}
+// 🔢 3. UPDATE BADGE ANGKA
+window.updateNotifBadge = function() {
+  const badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  const count = notifications.filter(n => !n.read).length;
+  badge.style.display = count > 0 ? 'block' : 'none';
+  badge.textContent = count > 9 ? '9+' : count;
+};
+window.klikNotif = function(id, tid) {
+  const n = notifications.find(x => x.id === id);
+  if (n && !n.read) {
+    n.read = true;
+    updateNotifBadge();
+    renderNotifications();
+  }
+  
+  // Tutup dropdown
+  const dd = document.querySelector('.dropdown-menu.show');
+  if (dd) {
+    const bsDropdown = bootstrap.Dropdown.getInstance(document.querySelector('[data-bs-toggle="dropdown"]'));
+    if (bsDropdown) bsDropdown.hide();
+  }
+  
+  // Buka chat/detail
+  if (window.bukaDetailTiket) {
+    window.bukaDetailTiket(tid);
+  }
+};
+
+// 👆 4. KLIK NOTIF → BACA & BUKA CHAT
+window.handleNotifClick = (id, ticketId) => {
+  // Tandai dibaca
+  const notif = notifications.find(n => n.id === id);
+  if (notif && !notif.read) {
+    notif.read = true;
+    window.updateNotifBadge();
+    renderNotifications();
+  }
+  // Tutup dropdown & buka chat
+  const ddEl = document.querySelector('.dropdown-menu.show');
+  if (ddEl) {
+    const dd = bootstrap.Dropdown.getInstance(document.querySelector('[data-bs-toggle="dropdown"]'));
+    if (dd) dd.hide();
+  }
+  window.openChat(ticketId);
+};
+
+window.markAllRead = function() {
+  notifications.forEach(n => n.read = true);
+  updateNotifBadge();
+  renderNotifications();
+};
+  document.getElementById('search').addEventListener('input', applyFilters);
+  document.getElementById('filter-status').addEventListener('change', applyFilters);
+  function applyFilters() {
+    const kw = document.getElementById('search').value.toLowerCase();
+    const st = document.getElementById('filter-status').value;
+    const f = allTickets.filter(t => (!kw || t.nama_pelanggan?.toLowerCase().includes(kw) || t.id_tiket?.toString().includes(kw)) && (!st || t.status === st));
+    renderTickets(f);
+  }
+
+  window.logout = () => { localStorage.clear(); window.location.href = '/login.html'; };
+
+  setupUI();
+</script>
+
+<!-- MODAL DETAIL TIKET -->
+<div class="modal fade" id="modalDetail" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold">📋 Detail Tiket #<span id="detail-id">...</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Info Grid -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6"><div class="p-3 bg-light rounded"><small class="text-muted d-block">Pelanggan</small><strong id="detail-nama">-</strong></div></div>
+          <div class="col-md-6"><div class="p-3 bg-light rounded"><small class="text-muted d-block">Email</small><strong id="detail-email">-</strong></div></div>
+          <div class="col-md-4"><div class="p-3 bg-light rounded"><small class="text-muted d-block">Kategori</small><span id="detail-kategori" class="badge bg-secondary">-</span></div></div>
+          <div class="col-md-4"><div class="p-3 bg-light rounded"><small class="text-muted d-block">Prioritas</small><span id="detail-prioritas" class="badge bg-secondary">-</span></div></div>
+          <div class="col-md-4"><div class="p-3 bg-light rounded"><small class="text-muted d-block">Status</small><span id="detail-status" class="badge bg-secondary">-</span></div></div>
+        </div>
+        
+        <!-- Deskripsi -->
+        <div class="mb-4">
+          <h6 class="fw-bold">📝 Deskripsi Keluhan</h6>
+          <div class="p-3 border rounded bg-white" id="detail-deskripsi" style="white-space: pre-wrap;">-</div>
+        </div>
+
+        <!-- Chat Section -->
+        <div>
+          <h6 class="fw-bold">💬 Riwayat Percakapan</h6>
+          <div id="detail-chat" class="p-3 border rounded bg-light" style="max-height: 250px; overflow-y: auto; min-height: 100px;">
+            <div class="text-center text-muted py-3">Memuat...</div>
+          </div>
+          <!-- Tambahkan onsubmit="return window.kirimBalasan(event)" -->
+<form id="form-balas" class="mt-3 d-flex gap-2" onsubmit="return window.kirimBalasan(event)">
+            <textarea id="input-balas" class="form-control" rows="2" placeholder="Tulis balasan..." required></textarea>
+            <button type="submit" class="btn btn-primary align-self-end"><i class="bi bi-send"></i></button>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-danger" onclick="hapusTiket()"><i class="bi bi-trash"></i> Hapus</button>
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Ubah Status</button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="ubahStatus('Baru')">Baru</a></li>
+            <li><a class="dropdown-item" href="#" onclick="ubahStatus('Diproses')">Diproses</a></li>
+            <li><a class="dropdown-item" href="#" onclick="ubahStatus('Menunggu')">Menunggu</a></li>
+            <li><a class="dropdown-item" href="#" onclick="ubahStatus('Selesai')">Selesai</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

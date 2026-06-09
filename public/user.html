@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Pelanggan - Sistem Keluhan</title>
+  
+ <!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="style.css">
+  <style>
+    :root { --primary: #4f46e5; --primary-hover: #4338ca; --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --text: #1e293b; --text-muted: #64748b; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+    .navbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
+    .navbar-brand { font-weight: 600; color: var(--primary); }
+    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card-header { background: #fff; border-bottom: 1px solid var(--border); padding: 1rem 1.25rem; }
+    .card-body { padding: 1.25rem; }
+    .btn-primary { background: var(--primary); border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: 500; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .table { margin-bottom: 0; }
+    .table th { background: #f8fafc; font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+    .table td { vertical-align: middle; }
+    .table-hover tbody tr:hover { background: #f8fafc; }
+    .badge-status { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+    .badge-baru { background: #dbeafe; color: #1d4ed8; }
+    .badge-diproses { background: #fef3c7; color: #b45309; }
+    .badge-selesai { background: #dcfce7; color: #166534; }
+    .form-control, .form-select { border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem; }
+    .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    .modal-content { border: none; border-radius: 12px; }
+    .modal-header { border-bottom: 1px solid var(--border); }
+    .modal-footer { border-top: 1px solid var(--border); }
+    .notif-item { cursor: pointer; transition: background 0.2s; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { background: #f0f7ff; border-left: 3px solid var(--primary); }
+    #notif-badge { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .text-primary { color: var(--primary) !important; }
+    .fw-medium { font-weight: 500; }
+    .small { font-size: 0.875rem; }
+    .cursor-pointer { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="#"><i class="bi bi-person me-2"></i>Portal Pelanggan</a>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <div class="dropdown me-2">
+          <button class="btn btn-light position-relative p-2" type="button" data-bs-toggle="dropdown" onclick="loadNotifications()">
+            <i class="bi bi-bell fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notif-badge" style="display:none; font-size: 0.65rem;">0</span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end shadow border-0" style="width: 320px; max-height: 400px; overflow-y: auto;">
+            <div class="dropdown-header d-flex justify-content-between align-items-center">
+              <span class="fw-bold">🔔 Notifikasi</span>
+              <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="markAllRead(); event.stopPropagation();">Tandai semua</button>
+            </div>
+            <div id="notif-list" class="list-group list-group-flush"><div class="list-group-item text-center text-muted py-3">Memuat...</div></div>
+          </div>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-light d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <img id="nav-avatar" src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff" class="rounded-circle" width="32" height="32">
+            <span id="nav-username" class="d-none d-md-inline fw-medium">Loading...</span>
+            <i class="bi bi-chevron-down small"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0" style="min-width: 220px;">
+            <li class="p-3 border-bottom d-flex align-items-center gap-2">
+              <img id="dropdown-avatar" src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff" class="rounded-circle" width="40" height="40">
+              <div class="lh-1"><div class="fw-bold" id="dropdown-name">Loading...</div><div class="small text-muted" id="dropdown-email">...</div></div>
+            </li>
+            <li><a class="dropdown-item py-2" href="#" onclick="openProfileModal()"><i class="bi bi-person-gear me-2"></i>Edit Profil</a></li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item py-2 text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Keluar</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Beranda</a></li><li class="breadcrumb-item active">Dashboard Saya</li></ol></nav>
+
+    <!-- Create Form -->
+    <div class="card mb-4">
+      <div class="card-header"><h5 class="mb-0 fw-medium">📝 Buat Tiket Baru</h5></div>
+      <div class="card-body">
+        <form id="form-create" class="row g-3">
+          <div class="col-md-3"><label class="form-label small">Kategori</label><select class="form-select" id="input-kategori" required><option value="">Pilih...</option><option value="Teknis">Teknis</option><option value="Billing">Billing</option><option value="Layanan">Layanan</option><option value="Produk">Produk</option></select></div>
+          <div class="col-md-3"><label class="form-label small">Prioritas</label><select class="form-select" id="input-prioritas" required><option value="">Pilih...</option><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div>
+          <div class="col-md-6"><label class="form-label small">Deskripsi</label><input type="text" class="form-control" id="input-deskripsi" required placeholder="Jelaskan keluhan Anda..."></div>
+          <div class="col-md-12"><button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>Kirim Tiket</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card mb-3">
+      <div class="card-body py-2">
+        <div class="row g-2 align-items-center">
+          <div class="col-md-4"><input type="text" id="search-input" class="form-control form-control-sm" placeholder="🔍 Cari tiket..."></div>
+          <div class="col-md-2"><select id="filter-status" class="form-select form-select-sm"><option value="">Semua Status</option><option value="Baru">Baru</option><option value="Diproses">Diproses</option><option value="Selesai">Selesai</option></select></div>
+          <div class="col-md-2"><select id="filter-kategori" class="form-select form-select-sm"><option value="">Semua Kategori</option><option value="Teknis">Teknis</option><option value="Billing">Billing</option><option value="Layanan">Layanan</option></select></div>
+          <div class="col-md-2"><select id="sort-by" class="form-select form-select-sm"><option value="terbaru">Terbaru</option><option value="terlama">Terlama</option></select></div>
+          <div class="col-md-2 text-end"><button class="btn btn-outline-secondary btn-sm" onclick="loadTickets()"><i class="bi bi-arrow-clockwise"></i> Refresh</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center"><h5 class="mb-0 fw-medium">📋 Tiket Saya</h5><span class="small text-muted" id="ticket-count">0 tiket</span></div>
+      <div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Kategori</th><th>Prioritas</th><th>Status</th><th class="text-end">Aksi</th></tr></thead><tbody id="table-body"><tr><td colspan="5" class="text-center py-4 text-muted">Memuat data...</td></tr></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- Modal: Detail -->
+  <div class="modal fade" id="modal-detail" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title fw-medium">Detail Tiket #<span id="detail-id"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="row mb-3"><div class="col-md-6"><div class="small text-muted">Pelanggan</div><div class="fw-medium" id="detail-pelanggan">-</div><div class="small text-muted mt-1">Email</div><div id="detail-email">-</div></div><div class="col-md-6 text-md-end"><span id="detail-status" class="badge-status"></span><span id="detail-prioritas" class="badge-status ms-1"></span></div></div>
+      <div class="mb-3"><div class="small text-muted">Deskripsi</div><p class="mb-0 p-2 bg-light rounded" id="detail-deskripsi">-</p></div>
+      <div class="small text-muted">Dibuat: <span id="detail-tanggal">-</span></div>
+      <h6 class="fw-medium mt-4 mb-2">💬 Percakapan</h6>
+      <div id="thread-container" class="mb-3" style="max-height:200px;overflow-y:auto"><div class="text-center text-muted py-3">Belum ada pesan</div></div>
+      <form id="form-reply" class="d-flex gap-2"><input type="hidden" id="reply-ticket-id"><textarea class="form-control" id="reply-text" rows="2" placeholder="Tulis balasan..." required></textarea><button type="submit" class="btn btn-primary align-self-end"><i class="bi bi-send"></i></button></form>
+    </div>
+  </div></div></div>
+
+  <!-- Modal: Profil -->
+  <div class="modal fade" id="modal-profil" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title fw-medium">Edit Profil</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="text-center mb-4">
+        <div class="position-relative d-inline-block">
+          <img id="profil-avatar-preview" src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff" class="rounded-circle border-3 border-white shadow" width="100" height="100" style="object-fit:cover;">
+          <label class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1 shadow-sm cursor-pointer"><input type="file" id="input-avatar" accept="image/*" class="d-none" onchange="previewAvatar(this)"><i class="bi bi-camera-fill text-primary"></i></label>
+        </div>
+        <div class="small text-muted mt-1">Klik kamera untuk ganti foto</div>
+      </div>
+      <form id="form-profil">
+        <div class="mb-3"><label class="form-label small">Nama Lengkap</label><input type="text" class="form-control" id="profil-nama" required></div>
+        <div class="mb-3"><label class="form-label small">Email (Tidak dapat diubah)</label><input type="email" class="form-control" id="profil-email" readonly></div>
+        <div class="mb-3"><label class="form-label small">No. Telepon</label><input type="tel" class="form-control" id="profil-telp" placeholder="08xxxxxxxxxx"></div>
+        <div class="mb-3"><label class="form-label small">Bio Singkat</label><textarea class="form-control" id="profil-bio" rows="2" placeholder="Ceritakan sedikit tentang Anda..."></textarea></div>
+        <div class="d-grid"><button type="submit" class="btn btn-primary">Simpan Perubahan</button></div>
+      </form>
+    </div>
+  </div></div></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API = 'http://localhost:3000/api';
+    const token = localStorage.getItem('token');
+    let currentUser = { nama: 'User', role: 'Pelanggan', email: '', telp: '', bio: '', avatar: null };
+    let allTickets = [];
+    let notifications = [];
+    let notifTracker = JSON.parse(localStorage.getItem('notifTracker') || '{}');
+
+    const getHeaders = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` });
+    window.logout = () => { if(confirm('Yakin logout?')) { localStorage.removeItem('token'); window.location.href = '/login.html'; } };
+
+    if (!token) { window.location.href = '/login.html'; }
+    else {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const saved = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        const role = payload.role || 'Pelanggan';
+        if (['Admin', 'CS', 'admin', 'cs'].includes(role)) { window.location.href = '/admin.html'; }
+        currentUser = { nama: payload.nama || saved.nama || 'User', role, email: payload.email || '', telp: saved.telp || '', bio: saved.bio || '', avatar: saved.avatar || null };
+      } catch(e) { console.error('Token error:', e); localStorage.removeItem('token'); window.location.href = '/login.html'; }
+    }
+
+    function setupDashboard() {
+      updateProfileUI(); loadTickets(); loadNotifications();
+    }
+
+    function updateProfileUI() {
+      const avSrc = currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.nama)}&background=4f46e5&color=fff`;
+      document.getElementById('nav-avatar').src = avSrc;
+      document.getElementById('dropdown-avatar').src = avSrc;
+      document.getElementById('dropdown-name').textContent = currentUser.nama;
+      document.getElementById('dropdown-email').textContent = currentUser.email;
+      document.getElementById('nav-username').textContent = currentUser.nama;
+    }
+    window.openProfileModal = () => {
+      document.getElementById('profil-nama').value = currentUser.nama;
+      document.getElementById('profil-email').value = currentUser.email;
+      document.getElementById('profil-telp').value = currentUser.telp;
+      document.getElementById('profil-bio').value = currentUser.bio;
+      document.getElementById('profil-avatar-preview').src = currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.nama)}&background=4f46e5&color=fff`;
+      new bootstrap.Modal(document.getElementById('modal-profil')).show();
+    };
+    window.previewAvatar = (input) => {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => document.getElementById('profil-avatar-preview').src = e.target.result;
+        reader.readAsDataURL(input.files[0]);
+      }
+    };
+    document.getElementById('form-profil').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const profileData = { 
+        nama: document.getElementById('profil-nama').value.trim(), 
+        telp: document.getElementById('profil-telp').value.trim(), 
+        bio: document.getElementById('profil-bio').value.trim(), 
+        avatar: document.getElementById('profil-avatar-preview').src.includes('ui-avatars') ? null : document.getElementById('profil-avatar-preview').src
+      };
+      localStorage.setItem('userProfile', JSON.stringify({...currentUser, ...profileData}));
+      currentUser = {...currentUser, ...profileData};
+      updateProfileUI();
+      bootstrap.Modal.getInstance(document.getElementById('modal-profil')).hide();
+      alert('✅ Profil berhasil diperbarui!');
+    });
+
+    async function loadNotifications() {
+      try {
+        const res = await fetch(`${API}/tickets`, { headers: getHeaders() });
+        if (!res.ok) return;
+        const tickets = await res.json();
+        let newNotifs = [];
+        for (const t of tickets) {
+          const tracker = notifTracker[t.id_tiket] || { status: '', lastRespTime: 0 };
+          let updated = false;
+          if (t.status && t.status !== tracker.status) {
+            newNotifs.push({ id: `notif-${t.id_tiket}-status-${Date.now()}`, ticketId: t.id_tiket, title: 'Status Diperbarui', message: `Tiket #${t.id_tiket} sekarang "${t.status}"`, time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'}), read: false, type: 'status' });
+            tracker.status = t.status; updated = true;
+          }
+          if (t.status !== 'Selesai') {
+            const thr = await fetch(`${API}/responses/ticket/${t.id_tiket}`, { headers: getHeaders() });
+            if (thr.ok) {
+              const resp = await thr.json();
+              resp.sort((a, b) => new Date(a.tgl_respon) - new Date(b.tgl_respon));
+              const last = resp[resp.length - 1];
+              if (last && ['Admin', 'CS', 'admin', 'cs'].includes(last.peran)) {
+                const respTime = new Date(last.tgl_respon).getTime();
+                if (respTime > tracker.lastRespTime) {
+                  newNotifs.push({ id: `notif-${t.id_tiket}-reply-${Date.now()}`, ticketId: t.id_tiket, title: 'Balasan Admin', message: `#${t.id_tiket}: "${last.isi_respon?.substring(0,40)||''}..."`, time: new Date(last.tgl_respon).toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'}), read: false, type: 'reply' });
+                  tracker.lastRespTime = respTime; updated = true;
+                }
+              }
+            }
+          }
+          if (updated) notifTracker[t.id_tiket] = tracker;
+        }
+        if (newNotifs.length > 0) {
+          localStorage.setItem('notifTracker', JSON.stringify(notifTracker));
+          notifications = [...newNotifs, ...notifications].slice(0, 30);
+          updateNotifBadge(); renderNotifications();
+        }
+      } catch(e) { console.error('Notif error:', e); }
+    }
+    function renderNotifications() {
+      const list = document.getElementById('notif-list');
+      if(!notifications.length) { list.innerHTML='<div class="list-group-item text-center text-muted py-3">🎉 Tidak ada notifikasi</div>'; return; }
+      list.innerHTML = notifications.map(n=>`<a href="#" class="list-group-item list-group-item-action notif-item ${n.read?'':'unread'}" onclick="openNotif(${n.ticketId}); markAsRead('${n.id}'); return false;"><div class="d-flex w-100 justify-content-between align-items-start"><div class="me-2"><div class="notif-title">${n.title}</div><div class="notif-desc">${n.message}</div><small class="notif-time">${n.time}</small></div>${!n.read?'<span class="badge bg-primary rounded-pill" style="font-size:0.6rem">Baru</span>':''}</div></a>`).join('');
+    }
+    function updateNotifBadge() { const b=document.getElementById('notif-badge'), c=notifications.filter(n=>!n.read).length; b.style.display=c>0?'block':'none'; b.textContent=c>9?'9+':c; }
+    function markAsRead(id) { const n=notifications.find(x=>x.id===id); if(n){n.read=true; renderNotifications(); updateNotifBadge();} }
+    function markAllRead() { notifications.forEach(n=>n.read=true); renderNotifications(); updateNotifBadge(); }
+    function openNotif(id) { const d=document.querySelector('[data-bs-toggle="dropdown"]'), bs=d?bootstrap.Dropdown.getInstance(d):null; if(bs) bs.hide(); openDetail(id); }
+    setInterval(loadNotifications, 45000);
+
+    async function loadTickets() {
+      try {
+        const res = await fetch(`${API}/tickets`, { headers: getHeaders() });
+        if(res.status===401||res.status===403) { localStorage.removeItem('token'); window.location.href='/login.html'; return; }
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        allTickets = await res.json();
+        renderTickets(allTickets);
+      } catch(e) { document.getElementById('table-body').innerHTML=`<tr><td colspan="5" class="text-center py-4 text-danger">Gagal: ${e.message}</td></tr>`; }
+    }
+
+    document.getElementById('form-create').addEventListener('submit', async(e)=>{
+      e.preventDefault(); const btn=e.target.querySelector('button[type="submit"]'), orig=btn.innerHTML;
+      try {
+        btn.disabled=true; btn.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Mengirim...';
+        const body={ nama_pelanggan:currentUser.nama, email:currentUser.email, kategori:document.getElementById('input-kategori').value, prioritas:document.getElementById('input-prioritas').value, deskripsi:document.getElementById('input-deskripsi').value };
+        const res=await fetch(`${API}/tickets`, {method:'POST',headers:getHeaders(),body:JSON.stringify(body)});
+        const data=await res.json(); if(!res.ok) throw new Error(data.error||data.message||'Gagal');
+        alert('✅ Tiket berhasil dibuat!'); e.target.reset(); loadTickets();
+      } catch(err){ alert('❌ '+err.message); }
+      finally { btn.disabled=false; btn.innerHTML=orig; }
+    });
+
+    window.openDetail = async(id)=>{
+      document.getElementById('detail-id').textContent=id; document.getElementById('reply-ticket-id').value=id;
+      try {
+        const res=await fetch(`${API}/tickets/${id}`,{headers:getHeaders()}); if(!res.ok) throw new Error('Gagal');
+        const t=await res.json();
+        document.getElementById('detail-pelanggan').textContent=t.nama_pelanggan||'-';
+        document.getElementById('detail-email').textContent=t.email||'-';
+        document.getElementById('detail-deskripsi').textContent=t.deskripsi||'-';
+        document.getElementById('detail-tanggal').textContent=t.tgl_keluhan?new Date(t.tgl_keluhan).toLocaleString('id-ID'):'-';
+        const sE=document.getElementById('detail-status'); sE.textContent=t.status||'Baru'; sE.className='badge-status badge-'+(t.status==='Selesai'?'selesai':t.status==='Diproses'?'diproses':'baru');
+        const pE=document.getElementById('detail-prioritas'); pE.textContent=t.prioritas||'-'; pE.className='badge-status '+(t.prioritas==='High'?'bg-danger text-white':t.prioritas==='Medium'?'bg-warning text-dark':'bg-secondary text-white');
+        await loadThread(id); new bootstrap.Modal(document.getElementById('modal-detail')).show();
+      } catch(e){ alert('Gagal detail: '+e.message); }
+    };
+
+    async function loadThread(tid) {
+      try {
+        const res=await fetch(`${API}/responses/ticket/${tid}`,{headers:getHeaders()}); if(!res.ok) throw new Error('Gagal');
+        const resp=await res.json(); const c=document.getElementById('thread-container');
+        if(!resp.length){ c.innerHTML='<div class="text-center text-muted py-3">Belum ada pesan</div>'; return; }
+        c.innerHTML=resp.map(r=>{ const isC=r.peran==='Customer'||r.peran==='Pelanggan'; return `<div class="thread-item ${isC?'thread-customer':'thread-admin'}"><div class="small text-muted mb-1"><strong>${r.peran||'Admin'}</strong> ${r.nama_petugas?'• '+r.nama_petugas:''} • ${new Date(r.tgl_respon).toLocaleString('id-ID')}</div><div>${r.isi_respon||''}</div></div>`; }).join('');
+      } catch(e){ document.getElementById('thread-container').innerHTML='<div class="text-center text-danger py-3">Gagal memuat</div>'; }
+    }
+
+    document.getElementById('form-reply').addEventListener('submit', async(e)=>{
+      e.preventDefault(); const tid=document.getElementById('reply-ticket-id').value, txt=document.getElementById('reply-text').value.trim();
+      if(!txt) { alert('Isi tidak boleh kosong'); return; }
+      try {
+        const res=await fetch(`${API}/responses`,{method:'POST',headers:getHeaders(),body:JSON.stringify({id_tiket:parseInt(tid),isi_respon:txt,peran:'Customer',nama_petugas:currentUser.nama})});
+        const data=await res.json(); if(!res.ok) throw new Error(data.error||data.message||'Gagal');
+        document.getElementById('reply-text').value=''; await loadThread(tid); loadTickets();
+      } catch(e){ alert('Gagal: '+e.message); }
+    });
+
+    function renderTickets(tickets) {
+      const tb=document.getElementById('table-body'), cnt=document.getElementById('ticket-count');
+      if(!tickets||!tickets.length){ tb.innerHTML='<tr><td colspan="5" class="text-center py-4 text-muted">Tidak ada tiket</td></tr>'; cnt.textContent='0 tiket'; return; }
+      cnt.textContent=`${tickets.length} tiket`;
+      tb.innerHTML=tickets.map(t=>{
+        const sc=t.status==='Selesai'?'badge-selesai':t.status==='Diproses'?'badge-diproses':'badge-baru';
+        const pc=t.prioritas==='High'?'bg-danger text-white':t.prioritas==='Medium'?'bg-warning text-dark':'bg-secondary text-white';
+        return `<tr><td><strong class="text-primary">#${t.id_tiket}</strong></td><td><span class="badge bg-light text-dark border">${t.kategori||'-'}</span></td><td><span class="badge ${pc}">${t.prioritas||'-'}</span></td><td><span class="badge-status ${sc}">${t.status||'-'}</span></td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="openDetail(${t.id_tiket})"><i class="bi bi-eye me-1"></i>Lihat</button></td></tr>`;
+      }).join('');
+    }
+
+    function applyFilters() {
+      const kw=document.getElementById('search-input').value.toLowerCase(), st=document.getElementById('filter-status').value, kat=document.getElementById('filter-kategori').value, sort=document.getElementById('sort-by').value;
+      let f=allTickets.filter(t=>{ const mk=!kw||(t.id_tiket?.toString().includes(kw))||(t.nama_pelanggan?.toLowerCase().includes(kw))||(t.deskripsi?.toLowerCase().includes(kw)); return mk&&(!st||t.status===st)&&(!kat||t.kategori===kat); });
+      if(sort==='terlama') f.sort((a,b)=>new Date(a.tgl_keluhan)-new Date(b.tgl_keluhan)); else f.sort((a,b)=>new Date(b.tgl_keluhan)-new Date(a.tgl_keluhan));
+      renderTickets(f);
+    }
+    ['search-input','filter-status','filter-kategori','sort-by'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener(id==='search-input'?'input':'change',applyFilters); });
+
+    setupDashboard();
+  </script>
+</body>
+</html>

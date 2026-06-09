@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Sistem Keluhan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+ <!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="style.css">
+  <style>
+    body { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+    .form-section {
+      display: none; /* Sembunyikan semua form dulu */
+    }
+    .form-section.active {
+      display: block; /* Tampilkan yang aktif saja */
+    }
+    #loginForm {
+      display: block; /* Login form tampil default */
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h3 class="text-center mb-4">🔐 Login</h3>
+    <div id="errorMsg" class="alert alert-danger" style="display:none;"></div>
+    
+    <!-- FORM LOGIN -->
+    <div id="loginSection" class="form-section active">
+      <form id="loginForm">
+        <div class="mb-3">
+          <label>Email</label>
+          <input type="email" id="email" class="form-control" required placeholder="email@contoh.com">
+        </div>
+        <div class="mb-3">
+          <label>Password</label>
+          <input type="password" id="password" class="form-control" required placeholder="••••••">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Masuk</button>
+      </form>
+      
+      <p class="text-center mt-3 text-muted">
+        Belum punya akun? <a href="#" onclick="showRegister(); return false;">Daftar sebagai Pelanggan</a>
+      </p>
+    </div>
+    
+    <!-- FORM DAFTAR (Tersembunyi) -->
+    <div id="registerSection" class="form-section">
+      <h5 class="mb-3">Daftar Akun Pelanggan</h5>
+      <input type="text" id="regNama" class="form-control mb-2" placeholder="Nama Lengkap">
+      <input type="email" id="regEmail" class="form-control mb-2" placeholder="Email">
+      <input type="password" id="regPass" class="form-control mb-2" placeholder="Password">
+      <button onclick="doRegister()" class="btn btn-success w-100">Daftar Akun</button>
+      <p class="text-center mt-2"><a href="#" onclick="showLogin(); return false;">← Kembali ke Login</a></p>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3000/api';
+
+    // Fungsi tampil/sembunyikan form
+    function showRegister() {
+      document.getElementById('loginSection').classList.remove('active');
+      document.getElementById('registerSection').classList.add('active');
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+
+    function showLogin() {
+      document.getElementById('registerSection').classList.remove('active');
+      document.getElementById('loginSection').classList.add('active');
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+
+    // HANDLE LOGIN
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMsg');
+      const btn = this.querySelector('button');
+      
+      errorMsg.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Memproses...';
+      
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        
+       if (res.ok) {
+  localStorage.setItem('token', data.token);
+  const role = data.user?.role || 'Pelanggan';
+  // Redirect otomatis sesuai role
+  if (['Admin', 'CS', 'admin', 'cs'].includes(role)) {
+    window.location.href = 'http://localhost:3000/admin.html';
+  } else {
+    window.location.href = 'http://localhost:3000/user.html';
+  }
+}
+      } catch (err) {
+        errorMsg.textContent = 'Gagal koneksi ke server';
+        errorMsg.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+      }
+    });
+
+    // HANDLE DAFTAR
+    async function doRegister() {
+      const nama = document.getElementById('regNama').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPass').value;
+      
+      if (!nama || !email || !password) {
+        alert('Semua field wajib diisi!');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            nama: nama, 
+            email: email, 
+            password: password, 
+            role: 'Pelanggan'
+          })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+          alert('✅ Akun berhasil dibuat! Silakan login.');
+          showLogin();
+        } else {
+          alert('❌ ' + (data.error || 'Gagal daftar'));
+        }
+      } catch (err) {
+        alert('❌ Gagal koneksi ke server');
+      }
+    }
+  </script>
+</body>
+</html>
