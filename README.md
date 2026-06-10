@@ -3,7 +3,7 @@
 Proyek Akhir Mata Kuliah **Pemrograman Berbasis Web (SIF-1402)**  
 Universitas Pignatelli Triputra - Program Studi Sistem Informasi (P1)
 
-## 👤 Ide ntitas Mahasiswa
+## 👤 Identitas Mahasiswa
 - **Nama** Celsiana Tantri
 - **NIM:** 243026028
 - **Angkatan:** 2024
